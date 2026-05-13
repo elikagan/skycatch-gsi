@@ -19,6 +19,7 @@
   // ----- Data: layers (single source for the right panel) -----
   // Each carries a capture date — time is a first-class dimension (§4.1).
   const LAYERS = [
+    { id: 'live-assets',  name: 'Live Assets',    date: 'Live',     visible: false, color: '#2ea3ff', live: true },
     { id: 'toes-crests',  name: 'Toes & Crests',  date: '04.12.26', visible: true,  color: '#22c55e' },
     { id: 'ahs-design',   name: 'AHS Design',     date: '03.30.26', visible: false, color: '#3b82f6' },
     { id: 'dig-face',     name: 'Dig Face',       date: '04.12.26', visible: false, color: '#a855f7' },
@@ -35,20 +36,34 @@
   // The timeline is a CAPTURE HISTORY — data that exists. Scheduled
   // captures live in the Mission Config flow, not here, so we don't
   // conflate "happened" with "planned" on the same axis.
+  //
+  // Spacing reflects REAL elapsed time between captures. Routine cadence
+  // is weekly but weather holds, maintenance, and opportunistic drops
+  // break the pattern — exactly what a mining ops timeline should show.
   const CAPTURES = [
     { date: '02.18.26', kind: 'past',    payload: 'LiDAR' },
     { date: '02.25.26', kind: 'past',    payload: 'Photo' },
     { date: '03.04.26', kind: 'past',    payload: 'LiDAR' },
-    { date: '03.11.26', kind: 'past',    payload: 'LiDAR' },
-    { date: '03.18.26', kind: 'past',    payload: 'Photo' },
+    { date: '03.18.26', kind: 'past',    payload: 'Photo' }, // 14-day gap (weather)
     { date: '03.25.26', kind: 'past',    payload: 'LiDAR' },
-    { date: '04.01.26', kind: 'past',    payload: 'LiDAR' },
-    { date: '04.08.26', kind: 'past',    payload: 'Photo' },
-    { date: '04.12.26', kind: 'current', payload: 'LiDAR' }
+    { date: '04.08.26', kind: 'past',    payload: 'Photo' }, // 14-day gap
+    { date: '04.12.26', kind: 'current', payload: 'LiDAR' }  // 4-day opportunistic
   ];
 
-  const CAPTURE_AXIS_LABELS = ['Feb', 'Mar', 'Apr'];
   const KIND_LABEL = { past: 'Past capture', current: 'Current view' };
+
+  // ----- Date helpers -----
+  function parseCaptureDate(d) {
+    const [m, day, y] = d.split('.').map(Number);
+    return new Date(2000 + y, m - 1, day);
+  }
+  function daysBetween(a, b) {
+    return Math.round((b - a) / (1000 * 60 * 60 * 24));
+  }
+  // 0..1 position of a date within the capture range
+  function dateToFraction(date, start, totalDays) {
+    return daysBetween(start, date) / totalDays;
+  }
 
   // ----- Actions registry (delegated click handlers) -----
   // Add a new click target: drop `data-action="..."` on any element.
@@ -106,14 +121,26 @@
     if (truck) truck.classList.toggle('is-open', state.scene === 'truck');
   }
 
-  // ----- Layer visibility on the map -----
-  // Driven by CSS class toggle on .map: `show-<layer-id>`.
+  // ----- Layer visibility -----
+  // Map-overlay layers: CSS class on .map (.map.show-<layer-id>).
+  // Canvas-level layers (e.g. live-assets, which live above the tilted
+  // map as floating UI): CSS class on .app.
   function syncMapLayerVisibility() {
     const mapEl = document.getElementById('map');
-    if (!mapEl) return;
+    if (!mapEl || !app) return;
     LAYERS.forEach(L => {
       mapEl.classList.toggle(`show-${L.id}`, L.visible);
+      app.classList.toggle(`show-${L.id}`, L.visible);
     });
+
+    // If the live-assets layer is turned off while an asset callout is
+    // open, snap back to default scene so the open callout isn't
+    // orphaned in a hidden layer.
+    const liveAssets = LAYERS.find(l => l.id === 'live-assets');
+    if (liveAssets && !liveAssets.visible &&
+        (state.scene === 'drone' || state.scene === 'truck')) {
+      setScene('default');
+    }
   }
 
   // ----- Layers rendering -----
@@ -127,6 +154,10 @@
     if (!list) return;
     list.innerHTML = LAYERS.map(L => {
       const openAction = LAYER_OPEN_ACTION[L.id];
+      const dateClass  = L.live ? 'layer-date is-live' : 'layer-date';
+      const dateInner  = L.live
+        ? `<span class="layer-live-dot"></span>${L.date}`
+        : L.date;
       return `
         <li class="layer-row ${L.visible ? 'is-visible' : ''}">
           <button class="layer-trigger" type="button" ${openAction ? `data-action="${openAction}"` : ''}>
@@ -135,7 +166,7 @@
               : `<span class="layer-swatch is-blank"></span>`}
             <span class="layer-meta">
               <span class="layer-name">${L.name}</span>
-              <span class="layer-date">${L.date}</span>
+              <span class="${dateClass}">${dateInner}</span>
             </span>
           </button>
           <button class="layer-eye"
@@ -156,7 +187,23 @@
     if (!el) return;
 
     const counts = CAPTURES.reduce((acc, c) => (acc[c.kind] = (acc[c.kind] || 0) + 1, acc), {});
-    const n = CAPTURES.length - 1;
+
+    // Real date positioning — gaps reflect actual elapsed time
+    const startDate = parseCaptureDate(CAPTURES[0].date);
+    const endDate   = parseCaptureDate(CAPTURES[CAPTURES.length - 1].date);
+    const totalDays = daysBetween(startDate, endDate);
+
+    // Month-start axis labels that fall within the capture range
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const axisTicks = [];
+    const startMonth = startDate.getMonth();
+    const endMonth   = endDate.getMonth();
+    for (let m = startMonth; m <= endMonth; m++) {
+      const d = new Date(startDate.getFullYear(), m, 1);
+      // Always include first capture's month at 0%; otherwise place at month-start position
+      const t = m === startMonth ? 0 : dateToFraction(d, startDate, totalDays);
+      axisTicks.push({ label: MONTHS[m], t });
+    }
 
     const legendKinds = [
       { kind: 'past',    label: 'past'    },
@@ -181,25 +228,27 @@
 
       <div class="timeline-track">
         <span class="timeline-baseline"></span>
-        ${CAPTURES.map((c, i) => `
-          <button class="timeline-marker is-${c.kind}"
-                  type="button"
-                  aria-label="${KIND_LABEL[c.kind]} on ${c.date}"
-                  style="--i:${i}; --n:${n}">
-            <span class="timeline-marker-dot"></span>
-            ${c.kind === 'current' ? '<span class="timeline-now-line"></span>' : ''}
-            <span class="timeline-tooltip" role="tooltip">
-              <span class="timeline-tooltip-kind is-${c.kind}">${KIND_LABEL[c.kind]}</span>
-              <span class="timeline-tooltip-date">${c.date}</span>
-              <span class="timeline-tooltip-meta">${c.payload} mission</span>
-            </span>
-          </button>
-        `).join('')}
+        ${CAPTURES.map(c => {
+          const t = dateToFraction(parseCaptureDate(c.date), startDate, totalDays);
+          return `
+            <button class="timeline-marker is-${c.kind}"
+                    type="button"
+                    aria-label="${KIND_LABEL[c.kind]} on ${c.date}"
+                    style="--t:${t}">
+              <span class="timeline-marker-dot"></span>
+              <span class="timeline-tooltip" role="tooltip">
+                <span class="timeline-tooltip-kind is-${c.kind}">${KIND_LABEL[c.kind]}</span>
+                <span class="timeline-tooltip-date">${c.date}</span>
+                <span class="timeline-tooltip-meta">${c.payload} mission</span>
+              </span>
+            </button>
+          `;
+        }).join('')}
       </div>
 
       <div class="timeline-axis">
-        ${CAPTURE_AXIS_LABELS.map((l, i) => `
-          <span style="--i:${i}; --n:${CAPTURE_AXIS_LABELS.length - 1}">${l}</span>
+        ${axisTicks.map(tick => `
+          <span style="--t:${tick.t}">${tick.label}</span>
         `).join('')}
       </div>
     `;

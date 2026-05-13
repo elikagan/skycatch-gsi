@@ -643,7 +643,11 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 4;
+  display: none;
 }
+/* Live Assets layer controls visibility */
+.app.show-live-assets .assets { display: block; }
+
 .asset {
   position: absolute;
   left: var(--x);
@@ -1051,6 +1055,26 @@ body {
   color: var(--text-dim);
   font-feature-settings: 'tnum';
 }
+.layer-date.is-live {
+  color: var(--positive);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.layer-live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--positive);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.18);
+  animation: live-pulse 2s ease-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,.18); }
+  50%      { box-shadow: 0 0 0 5px rgba(34,197,94,.30); }
+}
 
 .layer-eye {
   display: inline-flex;
@@ -1082,10 +1106,10 @@ body {
   border-radius: 1px;
 }
 
-/* Markers — absolutely positioned via --i / --n */
+/* Markers — absolutely positioned via --t (0..1 fraction of date range) */
 .timeline-marker {
   position: absolute;
-  left: calc(8px + (100% - 16px) * (var(--i) / var(--n)));
+  left: calc(8px + (100% - 16px) * var(--t));
   top: 50%;
   transform: translate(-50%, -50%);
   width: 24px; height: 24px;
@@ -1130,18 +1154,6 @@ body {
 }
 .timeline-marker.is-current:hover .timeline-marker-dot {
   box-shadow: 0 0 0 6px var(--brand-tint);
-}
-
-/* "Now" vertical line — anchors the current capture to the map above */
-.timeline-now-line {
-  position: absolute;
-  left: 50%;
-  top: -200vh;     /* extends way up through canvas; clipped by parent */
-  bottom: calc(50% + 11px);
-  width: 1.5px;
-  background: linear-gradient(to top, var(--brand) 0%, var(--brand) 12%, transparent 70%);
-  opacity: .55;
-  pointer-events: none;
 }
 
 /* Scheduled — open dashed ring */
@@ -1220,8 +1232,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* Axis labels — evenly distributed via --i / --n.
-   First/last labels align to their edges to avoid clipping. */
+/* Axis labels — positioned by date fraction --t */
 .timeline-axis {
   position: relative;
   height: 16px;
@@ -1229,7 +1240,7 @@ body {
 }
 .timeline-axis span {
   position: absolute;
-  left: calc(8px + (100% - 16px) * (var(--i) / var(--n)));
+  left: calc(8px + (100% - 16px) * var(--t));
   transform: translateX(-50%);
   font-size: 11px;
   font-weight: 500;
@@ -1238,4 +1249,3 @@ body {
   letter-spacing: .02em;
 }
 .timeline-axis span:first-child { transform: translateX(0); }
-.timeline-axis span:last-child  { transform: translateX(-100%); }
