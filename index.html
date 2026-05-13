@@ -158,6 +158,64 @@
           <span class="capture-stamp-date">04.12.26</span>
         </div>
 
+        <!-- ===== Live assets — small markers, click to expand ===== -->
+        <div class="assets">
+
+          <!-- Drone -->
+          <div class="asset" id="asset-drone" style="--x: 62%; --y: 27%">
+            <button class="asset-dot asset-dot-drone" type="button" data-action="open-drone" aria-label="Drone">
+              <span class="asset-pulse"></span>
+              <span class="material-symbols-outlined">flight</span>
+            </button>
+            <div class="asset-callout asset-callout-up">
+              <header class="asset-callout-head">
+                <span class="asset-callout-id">Drone <strong>DJI-M300-04</strong></span>
+                <button class="icon-btn icon-btn-sm" type="button" data-action="close-panel" aria-label="Close">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </header>
+              <dl class="asset-callout-meta">
+                <div><dt>Status</dt><dd><span class="status-dot status-positive"></span>Mission Execution</dd></div>
+                <div><dt>Battery</dt><dd>48%</dd></div>
+                <div><dt>Pilot</dt><dd>M. Rivera</dd></div>
+              </dl>
+              <div class="asset-callout-actions">
+                <button class="btn btn-secondary" type="button">Pilot</button>
+                <button class="btn btn-primary" type="button">Details</button>
+              </div>
+              <span class="asset-callout-stem"></span>
+            </div>
+          </div>
+
+          <!-- Haul truck -->
+          <div class="asset" id="asset-truck" style="--x: 56%; --y: 64%">
+            <button class="asset-dot asset-dot-truck" type="button" data-action="open-truck" aria-label="Haul truck">
+              <span class="material-symbols-outlined">local_shipping</span>
+            </button>
+            <div class="asset-callout asset-callout-up">
+              <header class="asset-callout-head">
+                <span class="asset-callout-id">Truck <strong>HT-093</strong></span>
+                <button class="icon-btn icon-btn-sm" type="button" data-action="close-panel" aria-label="Close">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </header>
+              <dl class="asset-callout-meta">
+                <div><dt>Payload</dt><dd>284 t</dd></div>
+                <div><dt>Last seen</dt><dd>12s ago</dd></div>
+                <div><dt>Operator</dt><dd>L. Chen</dd></div>
+              </dl>
+              <div class="asset-callout-actions asset-callout-actions-grid">
+                <button class="btn btn-secondary" type="button">LiDAR Update</button>
+                <button class="btn btn-secondary" type="button">Surface Update</button>
+                <button class="btn btn-secondary" type="button">Measure</button>
+                <button class="btn btn-secondary" type="button">Inspect</button>
+              </div>
+              <span class="asset-callout-stem"></span>
+            </div>
+          </div>
+
+        </div>
+
         <!-- Capture timeline -->
         <div class="timeline" id="timeline">
           <!-- Markers injected by app.js -->

@@ -94,6 +94,15 @@
   function setScene(name) {
     state.scene = name;
     app.setAttribute('data-scene', name);
+    syncAssets();
+  }
+
+  // ----- Live assets (drone, truck) -----
+  function syncAssets() {
+    const drone = document.getElementById('asset-drone');
+    const truck = document.getElementById('asset-truck');
+    if (drone) drone.classList.toggle('is-open', state.scene === 'drone');
+    if (truck) truck.classList.toggle('is-open', state.scene === 'truck');
   }
 
   // ----- Layer visibility on the map -----
