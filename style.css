@@ -10,15 +10,16 @@
   --bg-base:         #141416;
   --bg-elevated:     #1c1c1f;
   --bg-raised:       #242429;
-  --border-subtle:   #2a2a2f;
-  --border-strong:   #3a3a42;
+  --border-subtle:   #2f2f35;
+  --border-strong:   #44444c;
   --overlay-scrim:   rgba(0,0,0,.6);
 
-  /* Text */
+  /* Text — bumped contrast 2026-05-13 so secondary tiers read clearly
+     against the very dark base. Lowest tier is now WCAG AA for small text. */
   --text-primary:    #ffffff;
-  --text-secondary:  #b8b8c0;
-  --text-muted:      #7a7a82;
-  --text-dim:        #52525a;
+  --text-secondary:  #d4d4dc;
+  --text-muted:      #9a9aa3;
+  --text-dim:        #7a7a82;
 
   /* Brand & semantic */
   --brand:           #2ea3ff;
@@ -122,13 +123,13 @@ body {
 
 .logo {
   display: flex; align-items: center;
-  padding: 4px 6px;
+  padding: 4px 8px;
   border-radius: 6px;
   transition: background 150ms ease-out;
 }
 .logo:hover { background: var(--bg-raised); }
 .logo-mark {
-  height: 22px;
+  height: 30px;
   width: auto;
   display: block;
 }
@@ -624,6 +625,19 @@ body {
   color: var(--brand);
 }
 .asset-dot-truck .material-symbols-outlined { color: var(--warning); }
+
+/* Custom drone glyph — top-down quadcopter */
+.asset-glyph {
+  width: 18px; height: 18px;
+  display: block;
+  fill: var(--brand);
+  stroke: var(--brand);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.asset-glyph circle { fill: var(--brand); stroke: none; }
+.asset-glyph .asset-glyph-body { fill: var(--bg-elevated); }
+.asset-glyph line { stroke: var(--brand); fill: none; }
 
 /* Live pulse on the drone */
 .asset-pulse {
