@@ -115,7 +115,7 @@
     { date: '04.12.26', kind: 'current', payload: 'LiDAR' }  // 4-day opportunistic
   ];
 
-  const KIND_LABEL = { past: 'Past capture', current: 'Current view' };
+  const KIND_LABEL = { past: 'Event', current: 'Now' };
 
   // ----- Date helpers -----
   function parseCaptureDate(d) {
@@ -306,43 +306,29 @@
     const el = document.getElementById('timeline');
     if (!el) return;
 
-    const counts = CAPTURES.reduce((acc, c) => (acc[c.kind] = (acc[c.kind] || 0) + 1, acc), {});
-
     // Real date positioning — gaps reflect actual elapsed time
     const startDate = parseCaptureDate(CAPTURES[0].date);
     const endDate   = parseCaptureDate(CAPTURES[CAPTURES.length - 1].date);
     const totalDays = daysBetween(startDate, endDate);
 
-    // Month-start axis labels that fall within the capture range
+    // Month-start axis labels that fall within the date range
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const axisTicks = [];
     const startMonth = startDate.getMonth();
     const endMonth   = endDate.getMonth();
     for (let m = startMonth; m <= endMonth; m++) {
       const d = new Date(startDate.getFullYear(), m, 1);
-      // Always include first capture's month at 0%; otherwise place at month-start position
       const t = m === startMonth ? 0 : dateToFraction(d, startDate, totalDays);
       axisTicks.push({ label: MONTHS[m], t });
     }
 
-    const legendKinds = [
-      { kind: 'past',    label: 'past'    },
-      { kind: 'current', label: 'current' }
-    ].filter(k => counts[k.kind]);
-
     el.innerHTML = `
       <header class="timeline-header">
         <span class="timeline-title">
-          <span class="material-symbols-outlined">history</span>
-          Capture history
+          <span class="material-symbols-outlined">timeline</span>
+          Timeline
         </span>
         <span class="timeline-summary">
-          ${legendKinds.map(k => `
-            <span class="timeline-summary-item">
-              <span class="timeline-legend-dot is-${k.kind}"></span>
-              ${counts[k.kind]} ${k.label}
-            </span>
-          `).join('')}
           <button class="timeline-toggle icon-btn icon-btn-sm"
                   type="button"
                   data-action="toggle-timeline"
@@ -365,7 +351,6 @@
               <span class="timeline-tooltip" role="tooltip">
                 <span class="timeline-tooltip-kind is-${c.kind}">${KIND_LABEL[c.kind]}</span>
                 <span class="timeline-tooltip-date">${c.date}</span>
-                <span class="timeline-tooltip-meta">${c.payload} mission</span>
               </span>
             </button>
           `;
