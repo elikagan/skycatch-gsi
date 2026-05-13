@@ -56,7 +56,16 @@
     'toggle-theme': toggleTheme,
     'go-default':   () => setScene('default'),
     'open-mission': () => setScene('mission'),
-    'open-slope':   () => setScene('slope'),
+    'open-slope':   () => {
+      // Make sure the slope layer is on so users see the colored haul road
+      const slope = LAYERS.find(l => l.id === 'slope-1');
+      if (slope && !slope.visible) {
+        slope.visible = true;
+        renderLayers();
+        syncMapLayerVisibility();
+      }
+      setScene('slope');
+    },
     'open-drone':   () => setScene('drone'),
     'open-truck':   () => setScene('truck'),
     'close-panel':  () => setScene('default'),
@@ -98,27 +107,37 @@
   }
 
   // ----- Layers rendering -----
+  // Layers that open a detail scene when their row is clicked.
+  const LAYER_OPEN_ACTION = {
+    'slope-1': 'open-slope'
+  };
+
   function renderLayers() {
     const list = document.getElementById('layers-list');
     if (!list) return;
-    list.innerHTML = LAYERS.map(L => `
-      <li class="layer-row ${L.visible ? 'is-visible' : ''}">
-        ${L.color
-          ? `<span class="layer-swatch" style="--swatch:${L.color}"></span>`
-          : `<span class="layer-swatch is-blank"></span>`}
-        <div class="layer-meta">
-          <div class="layer-name">${L.name}</div>
-          <div class="layer-date">${L.date}</div>
-        </div>
-        <button class="layer-eye"
-                type="button"
-                data-action="toggle-layer"
-                data-layer="${L.id}"
-                aria-label="${L.visible ? 'Hide' : 'Show'} ${L.name}">
-          <span class="material-symbols-outlined">${L.visible ? 'visibility' : 'visibility_off'}</span>
-        </button>
-      </li>
-    `).join('');
+    list.innerHTML = LAYERS.map(L => {
+      const openAction = LAYER_OPEN_ACTION[L.id];
+      return `
+        <li class="layer-row ${L.visible ? 'is-visible' : ''}">
+          <button class="layer-trigger" type="button" ${openAction ? `data-action="${openAction}"` : ''}>
+            ${L.color
+              ? `<span class="layer-swatch" style="--swatch:${L.color}"></span>`
+              : `<span class="layer-swatch is-blank"></span>`}
+            <span class="layer-meta">
+              <span class="layer-name">${L.name}</span>
+              <span class="layer-date">${L.date}</span>
+            </span>
+          </button>
+          <button class="layer-eye"
+                  type="button"
+                  data-action="toggle-layer"
+                  data-layer="${L.id}"
+                  aria-label="${L.visible ? 'Hide' : 'Show'} ${L.name}">
+            <span class="material-symbols-outlined">${L.visible ? 'visibility' : 'visibility_off'}</span>
+          </button>
+        </li>
+      `;
+    }).join('');
   }
 
   // ----- Timeline rendering -----

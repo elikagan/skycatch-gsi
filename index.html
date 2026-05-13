@@ -162,6 +162,69 @@
         <div class="timeline" id="timeline">
           <!-- Markers injected by app.js -->
         </div>
+
+        <!-- ===== State 2: Slope Analysis detail strip ===== -->
+        <section class="analysis-strip" aria-hidden="true">
+          <header class="analysis-strip-head">
+            <div class="analysis-strip-title">
+              <span class="analysis-strip-swatch" style="--c:#ef4444"></span>
+              <h2>Slope Analysis 1</h2>
+              <span class="analysis-strip-stamp">Capture <strong>04.12.26</strong></span>
+            </div>
+            <button class="icon-btn icon-btn-sm" type="button" data-action="close-panel" aria-label="Close">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </header>
+
+          <div class="analysis-strip-body">
+            <div class="kpi-row">
+              <article class="kpi" data-tone="positive">
+                <div class="kpi-label">Road Compliance</div>
+                <div class="kpi-value">87<span class="kpi-unit">%</span></div>
+              </article>
+              <article class="kpi" data-tone="warning">
+                <div class="kpi-label">Steepest Slope</div>
+                <div class="kpi-value">5.6<span class="kpi-unit">%</span></div>
+              </article>
+              <article class="kpi" data-tone="neutral">
+                <div class="kpi-label">Flattest Slope</div>
+                <div class="kpi-value">0.2<span class="kpi-unit">%</span></div>
+              </article>
+              <article class="kpi" data-tone="neutral">
+                <div class="kpi-label">Segment Length</div>
+                <div class="kpi-value">1,240<span class="kpi-unit">m</span></div>
+              </article>
+            </div>
+
+            <figure class="chart">
+              <figcaption class="chart-caption">Segment cross-section</figcaption>
+              <svg class="chart-svg" viewBox="0 0 600 110" preserveAspectRatio="none">
+                <!-- Grid lines -->
+                <g class="chart-grid">
+                  <line x1="0" x2="600" y1="20"  y2="20" />
+                  <line x1="0" x2="600" y1="55"  y2="55" />
+                  <line x1="0" x2="600" y1="90"  y2="90" />
+                </g>
+                <!-- Reference (dashed) -->
+                <polyline class="chart-ref"
+                  points="0,55 60,52 120,50 180,48 240,46 300,44 360,46 420,48 480,52 540,56 600,60" />
+                <!-- Actual elevation profile colored by compliance bands -->
+                <polyline class="chart-line is-positive"
+                  points="0,60 60,55 120,50 180,46" />
+                <polyline class="chart-line is-warning"
+                  points="180,46 240,42 300,38 360,42" />
+                <polyline class="chart-line is-danger"
+                  points="360,42 420,52 480,68 540,82 600,92" />
+              </svg>
+              <div class="chart-axis">
+                <span>0 m</span>
+                <span>620 m</span>
+                <span>1,240 m</span>
+              </div>
+            </figure>
+          </div>
+        </section>
+        <!-- /State 2 -->
       </main>
 
       <!-- Right Layers panel -->
