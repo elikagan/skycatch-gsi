@@ -403,6 +403,30 @@ body {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 4px;
+  transition: padding 200ms ease-out, border-bottom-color 200ms ease-out, margin 200ms ease-out;
+}
+
+/* Minimize toggle inside the header summary */
+.timeline-toggle {
+  margin-left: 4px;
+}
+.timeline-toggle-icon {
+  transition: transform 200ms ease-out;
+}
+.timeline.is-minimized .timeline-toggle-icon { transform: rotate(180deg); }
+
+/* Minimized state — collapse to just the header */
+.timeline.is-minimized {
+  padding-bottom: 4px;
+}
+.timeline.is-minimized .timeline-header {
+  padding-bottom: 0;
+  border-bottom-color: transparent;
+  margin-bottom: 0;
+}
+.timeline.is-minimized .timeline-track,
+.timeline.is-minimized .timeline-axis {
+  display: none;
 }
 .timeline-title {
   display: inline-flex;
@@ -643,10 +667,7 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 4;
-  display: none;
 }
-/* Live Assets layer controls visibility */
-.app.show-live-assets .assets { display: block; }
 
 .asset {
   position: absolute;
@@ -654,7 +675,12 @@ body {
   top: var(--y);
   transform: translate(-50%, -50%);
   pointer-events: none;
+  display: none;
 }
+/* Each asset is its own leaf layer (drone-1, truck-1). Layers panel
+   toggles flip these classes on .app. */
+.app.show-drone-1 #asset-drone { display: block; }
+.app.show-truck-1 #asset-truck { display: block; }
 
 /* The dot */
 .asset-dot {
@@ -1015,7 +1041,7 @@ body {
 /* Layer name+swatch trigger — clickable if a detail action is wired */
 .layer-trigger {
   display: grid;
-  grid-template-columns: 12px 1fr;
+  grid-template-columns: 14px 1fr;
   align-items: center;
   gap: 10px;
   padding: 4px 6px;
@@ -1028,6 +1054,46 @@ body {
 .layer-trigger[data-action]:hover .layer-name {
   color: var(--brand);
 }
+
+/* Group row — has a chevron in the swatch slot */
+.layer-group .layer-trigger { cursor: pointer; }
+.layer-group .layer-name { font-weight: 600; }
+.layer-chevron {
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: transform 150ms ease-out, color 150ms ease-out;
+}
+.layer-group.is-expanded .layer-chevron { transform: rotate(90deg); }
+.layer-group .layer-trigger:hover .layer-chevron { color: var(--text-primary); }
+
+/* Group eye states */
+.layer-group.is-vis-off  .layer-eye          { color: var(--text-muted); }
+.layer-group.is-vis-some .layer-eye          { color: var(--brand); opacity: .65; }
+.layer-group.is-vis-some .layer-eye::after {
+  /* Diagonal slash through the eye to indicate "partial" state */
+  content: '';
+  position: absolute;
+  width: 16px; height: 1.5px;
+  background: var(--brand);
+  transform: rotate(-45deg);
+  border-radius: 2px;
+}
+.layer-group .layer-eye { position: relative; overflow: visible; }
+.layer-group.is-vis-all  .layer-eye          { color: var(--brand); }
+
+/* Child row indent — sits under its expanded group */
+.layer-row.is-child {
+  padding-left: 24px;
+  position: relative;
+}
+.layer-row.is-child::before {
+  content: '';
+  position: absolute;
+  left: 16px; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--border-subtle);
+}
+.layer-row.is-child .layer-name { font-weight: 500; }
 
 .layer-swatch {
   width: 10px; height: 10px;

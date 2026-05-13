@@ -10,7 +10,8 @@
   const state = {
     scene: 'default',
     theme: localStorage.getItem('skycatch-theme') || 'dark',
-    captureDate: '04.12.26'
+    captureDate: '04.12.26',
+    timelineMinimized: localStorage.getItem('skycatch-timeline-min') === '1'
   };
 
   const root = document.documentElement;
@@ -18,19 +19,71 @@
 
   // ----- Data: layers (single source for the right panel) -----
   // Each carries a capture date — time is a first-class dimension (§4.1).
+  // Layers tree. Groups have `isGroup: true` + `children`; leaves are
+  // the actual map data layers. Group visibility is computed from
+  // children. Leaf IDs map to SVG <g data-layer="..."> on the map.
   const LAYERS = [
-    { id: 'live-assets',  name: 'Live Assets',    date: 'Live',     visible: false, color: '#2ea3ff', live: true },
+    {
+      id: 'live-assets', name: 'Live Assets', live: true,
+      isGroup: true, expanded: false,
+      children: [
+        { id: 'drone-1', name: 'Drone DJI-M300-04', date: 'Live', visible: false, color: '#2ea3ff', live: true },
+        { id: 'truck-1', name: 'Truck HT-093',      date: 'Live', visible: false, color: '#eab308', live: true }
+      ]
+    },
     { id: 'toes-crests',  name: 'Toes & Crests',  date: '04.12.26', visible: true,  color: '#22c55e' },
     { id: 'ahs-design',   name: 'AHS Design',     date: '03.30.26', visible: false, color: '#3b82f6' },
     { id: 'dig-face',     name: 'Dig Face',       date: '04.12.26', visible: false, color: '#a855f7' },
     { id: 'width-1',      name: 'Width Analysis', date: '04.12.26', visible: false, color: '#eab308' },
-    { id: 'slope-1',      name: 'Slope Analysis 1', date: '04.12.26', visible: true,  color: '#ef4444' },
-    { id: 'boundary-1',   name: 'Boundary 1',     date: '04.12.26', visible: true,  color: '#2ea3ff' },
-    { id: 'boundary-2',   name: 'Boundary 2',     date: '04.12.26', visible: false, color: '#eab308' },
+    {
+      id: 'slope-analyses', name: 'Slope Analyses',
+      isGroup: true, expanded: true,
+      children: [
+        { id: 'slope-1', name: 'Slope Analysis 1', date: '04.12.26', visible: true,  color: '#ef4444' },
+        { id: 'slope-2', name: 'Slope Analysis 2', date: '04.05.26', visible: false, color: '#ef4444' },
+        { id: 'slope-3', name: 'Slope Analysis 3', date: '03.18.26', visible: false, color: '#ef4444' }
+      ]
+    },
+    {
+      id: 'boundaries', name: 'Boundaries',
+      isGroup: true, expanded: false,
+      children: [
+        { id: 'boundary-1', name: 'Boundary 1', date: '04.12.26', visible: true,  color: '#2ea3ff' },
+        { id: 'boundary-2', name: 'Boundary 2', date: '04.12.26', visible: false, color: '#eab308' }
+      ]
+    },
     { id: 'orthophoto',   name: 'Orthophoto',     date: '04.12.26', visible: true,  color: null },
     { id: 'terrain',      name: 'Terrain',        date: '04.12.26', visible: false, color: null },
     { id: 'basemap',      name: 'Basemap',        date: '—',        visible: true,  color: null }
   ];
+
+  // Helpers for the tree
+  function eachLeaf(fn) {
+    LAYERS.forEach(L => {
+      if (L.isGroup) L.children.forEach(fn);
+      else fn(L);
+    });
+  }
+  function findLayer(id) {
+    for (const L of LAYERS) {
+      if (L.id === id) return L;
+      if (L.isGroup) {
+        const c = L.children.find(c => c.id === id);
+        if (c) return c;
+      }
+    }
+    return null;
+  }
+  function findGroupOf(id) {
+    return LAYERS.find(L => L.isGroup && L.children.some(c => c.id === id)) || null;
+  }
+  // A group's visibility = any child visible
+  function groupVisibility(group) {
+    const on = group.children.filter(c => c.visible).length;
+    if (on === 0) return 'off';
+    if (on === group.children.length) return 'all';
+    return 'some';
+  }
 
   // ----- Data: timeline markers -----
   // The timeline is a CAPTURE HISTORY — data that exists. Scheduled
@@ -87,11 +140,33 @@
     'close-panel':  () => setScene('default'),
     'toggle-layer': (el) => {
       const id = el.getAttribute('data-layer');
-      const layer = LAYERS.find(l => l.id === id);
+      const layer = findLayer(id);
       if (!layer) return;
       layer.visible = !layer.visible;
       renderLayers();
       syncMapLayerVisibility();
+    },
+    'toggle-group-eye': (el) => {
+      const id = el.getAttribute('data-group');
+      const group = LAYERS.find(g => g.id === id && g.isGroup);
+      if (!group) return;
+      const vis = groupVisibility(group);
+      const next = vis === 'off' ? true : false; // any-on -> all off; all off -> all on
+      group.children.forEach(c => { c.visible = next; });
+      renderLayers();
+      syncMapLayerVisibility();
+    },
+    'toggle-group-expand': (el) => {
+      const id = el.getAttribute('data-group');
+      const group = LAYERS.find(g => g.id === id && g.isGroup);
+      if (!group) return;
+      group.expanded = !group.expanded;
+      renderLayers();
+    },
+    'toggle-timeline': () => {
+      state.timelineMinimized = !state.timelineMinimized;
+      localStorage.setItem('skycatch-timeline-min', state.timelineMinimized ? '1' : '0');
+      applyTimelineState();
     },
     'new': () => {}
   };
@@ -122,25 +197,23 @@
   }
 
   // ----- Layer visibility -----
-  // Map-overlay layers: CSS class on .map (.map.show-<layer-id>).
-  // Canvas-level layers (e.g. live-assets, which live above the tilted
-  // map as floating UI): CSS class on .app.
+  // Walks LEAF layers only. Map-overlay layers (boundary-N, slope-N,
+  // etc.) get a class on .map. Canvas-level layers (drone-1, truck-1)
+  // float above the tilted map, so they get a class on .app.
   function syncMapLayerVisibility() {
     const mapEl = document.getElementById('map');
     if (!mapEl || !app) return;
-    LAYERS.forEach(L => {
+    eachLeaf(L => {
       mapEl.classList.toggle(`show-${L.id}`, L.visible);
       app.classList.toggle(`show-${L.id}`, L.visible);
     });
 
-    // If the live-assets layer is turned off while an asset callout is
-    // open, snap back to default scene so the open callout isn't
-    // orphaned in a hidden layer.
-    const liveAssets = LAYERS.find(l => l.id === 'live-assets');
-    if (liveAssets && !liveAssets.visible &&
-        (state.scene === 'drone' || state.scene === 'truck')) {
-      setScene('default');
-    }
+    // If the drone or truck layer is turned off while its callout is
+    // open, snap back to default so the callout isn't orphaned.
+    const drone = findLayer('drone-1');
+    const truck = findLayer('truck-1');
+    if (drone && !drone.visible && state.scene === 'drone') setScene('default');
+    if (truck && !truck.visible && state.scene === 'truck') setScene('default');
   }
 
   // ----- Layers rendering -----
@@ -149,36 +222,71 @@
     'slope-1': 'open-slope'
   };
 
+  function renderLeafRow(L, isChild) {
+    const openAction = LAYER_OPEN_ACTION[L.id];
+    const dateClass  = L.live ? 'layer-date is-live' : 'layer-date';
+    const dateInner  = L.live
+      ? `<span class="layer-live-dot"></span>${L.date}`
+      : L.date;
+    return `
+      <li class="layer-row ${L.visible ? 'is-visible' : ''} ${isChild ? 'is-child' : ''}">
+        <button class="layer-trigger" type="button" ${openAction ? `data-action="${openAction}"` : ''}>
+          ${L.color
+            ? `<span class="layer-swatch" style="--swatch:${L.color}"></span>`
+            : `<span class="layer-swatch is-blank"></span>`}
+          <span class="layer-meta">
+            <span class="layer-name">${L.name}</span>
+            <span class="${dateClass}">${dateInner}</span>
+          </span>
+        </button>
+        <button class="layer-eye"
+                type="button"
+                data-action="toggle-layer"
+                data-layer="${L.id}"
+                aria-label="${L.visible ? 'Hide' : 'Show'} ${L.name}">
+          <span class="material-symbols-outlined">${L.visible ? 'visibility' : 'visibility_off'}</span>
+        </button>
+      </li>
+    `;
+  }
+
+  function renderGroupRow(G) {
+    const vis = groupVisibility(G); // 'off' | 'some' | 'all'
+    const onCount = G.children.filter(c => c.visible).length;
+    const eyeIcon = vis === 'all' ? 'visibility'
+                  : vis === 'some' ? 'visibility' // shown but marked partial via class
+                  : 'visibility_off';
+    const dateInner = G.live
+      ? `<span class="layer-live-dot"></span>Live`
+      : `${onCount}/${G.children.length} visible`;
+    const dateClass = G.live ? 'layer-date is-live' : 'layer-date';
+
+    return `
+      <li class="layer-row layer-group is-vis-${vis} ${G.expanded ? 'is-expanded' : ''}">
+        <button class="layer-trigger" type="button"
+                data-action="toggle-group-expand" data-group="${G.id}">
+          <span class="layer-chevron material-symbols-outlined">chevron_right</span>
+          <span class="layer-meta">
+            <span class="layer-name">${G.name}</span>
+            <span class="${dateClass}">${dateInner}</span>
+          </span>
+        </button>
+        <button class="layer-eye"
+                type="button"
+                data-action="toggle-group-eye"
+                data-group="${G.id}"
+                aria-label="Toggle all ${G.name}">
+          <span class="material-symbols-outlined">${eyeIcon}</span>
+        </button>
+      </li>
+      ${G.expanded ? G.children.map(c => renderLeafRow(c, true)).join('') : ''}
+    `;
+  }
+
   function renderLayers() {
     const list = document.getElementById('layers-list');
     if (!list) return;
-    list.innerHTML = LAYERS.map(L => {
-      const openAction = LAYER_OPEN_ACTION[L.id];
-      const dateClass  = L.live ? 'layer-date is-live' : 'layer-date';
-      const dateInner  = L.live
-        ? `<span class="layer-live-dot"></span>${L.date}`
-        : L.date;
-      return `
-        <li class="layer-row ${L.visible ? 'is-visible' : ''}">
-          <button class="layer-trigger" type="button" ${openAction ? `data-action="${openAction}"` : ''}>
-            ${L.color
-              ? `<span class="layer-swatch" style="--swatch:${L.color}"></span>`
-              : `<span class="layer-swatch is-blank"></span>`}
-            <span class="layer-meta">
-              <span class="layer-name">${L.name}</span>
-              <span class="${dateClass}">${dateInner}</span>
-            </span>
-          </button>
-          <button class="layer-eye"
-                  type="button"
-                  data-action="toggle-layer"
-                  data-layer="${L.id}"
-                  aria-label="${L.visible ? 'Hide' : 'Show'} ${L.name}">
-            <span class="material-symbols-outlined">${L.visible ? 'visibility' : 'visibility_off'}</span>
-          </button>
-        </li>
-      `;
-    }).join('');
+    list.innerHTML = LAYERS.map(L => L.isGroup ? renderGroupRow(L) : renderLeafRow(L, false)).join('');
   }
 
   // ----- Timeline rendering -----
@@ -223,6 +331,12 @@
               ${counts[k.kind]} ${k.label}
             </span>
           `).join('')}
+          <button class="timeline-toggle icon-btn icon-btn-sm"
+                  type="button"
+                  data-action="toggle-timeline"
+                  aria-label="Toggle timeline">
+            <span class="material-symbols-outlined timeline-toggle-icon">expand_more</span>
+          </button>
         </span>
       </header>
 
@@ -266,9 +380,17 @@
     }
   });
 
+  // ----- Timeline min/expand state -----
+  function applyTimelineState() {
+    const el = document.getElementById('timeline');
+    if (!el) return;
+    el.classList.toggle('is-minimized', state.timelineMinimized);
+  }
+
   // ----- Init -----
   applyTheme();
   renderLayers();
   renderTimeline();
+  applyTimelineState();
   syncMapLayerVisibility();
 })();
