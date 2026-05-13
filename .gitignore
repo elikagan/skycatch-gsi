@@ -1,0 +1,10 @@
+.DS_Store
+*.log
+node_modules/
+
+# Original-resolution source images (we ship resized copies in assets/)
+/MineBG.png
+
+# Reference materials — kept locally, not deployed
+/Screenshot_wireframes/
+/ExistingSkycatch_designLanguage/

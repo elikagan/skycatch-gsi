@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>Skycatch GSI — Cerro Negro Pit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app" data-scene="default">
+
+    <!-- ===== Top bar ===== -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <a class="logo" href="#" data-action="go-default" aria-label="Skycatch">
+          <img src="assets/SkycatchLogo.png" alt="Skycatch">
+        </a>
+        <div class="breadcrumb">
+          <button class="pill" type="button">
+            <span class="material-symbols-outlined">flag</span>
+            <span class="pill-label">Org.</span>
+            <span class="pill-value">Cordillera Resources</span>
+            <span class="material-symbols-outlined chev">expand_more</span>
+          </button>
+          <button class="pill" type="button">
+            <span class="pill-label">Site.</span>
+            <span class="pill-value">Cerro Negro Pit</span>
+            <span class="material-symbols-outlined chev">expand_more</span>
+          </button>
+        </div>
+      </div>
+
+      <nav class="topnav" aria-label="Primary">
+        <button class="nav-item is-active" type="button" data-action="go-default">GSI</button>
+        <button class="nav-item" type="button">Simulation</button>
+        <button class="nav-item" type="button">Reports</button>
+        <button class="nav-item" type="button">Operations</button>
+        <button class="nav-item" type="button">Connections</button>
+      </nav>
+
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+          <span class="material-symbols-outlined theme-icon-dark">light_mode</span>
+          <span class="material-symbols-outlined theme-icon-light">dark_mode</span>
+        </button>
+        <button class="avatar" type="button" aria-label="Account">E</button>
+      </div>
+    </header>
+
+    <!-- ===== Workspace ===== -->
+    <div class="workspace">
+
+      <!-- Left icon rail -->
+      <aside class="rail" aria-label="Tools">
+        <button class="rail-btn" type="button" data-action="new" aria-label="New">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+        <button class="rail-btn is-active" type="button" aria-label="Map">
+          <span class="material-symbols-outlined">map</span>
+        </button>
+        <button class="rail-btn" type="button" aria-label="Dataset">
+          <span class="material-symbols-outlined">dataset</span>
+        </button>
+        <button class="rail-btn" type="button" aria-label="Analyze">
+          <span class="material-symbols-outlined">analytics</span>
+        </button>
+        <button class="rail-btn" type="button" aria-label="Survey">
+          <span class="material-symbols-outlined">straighten</span>
+        </button>
+        <button class="rail-btn" type="button" aria-label="Settings">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+        <div class="rail-spacer"></div>
+        <button class="rail-btn" type="button" aria-label="Account">
+          <span class="material-symbols-outlined">account_circle</span>
+        </button>
+      </aside>
+
+      <!-- Map canvas -->
+      <main class="canvas">
+        <div class="map">
+          <img class="map-bg" src="assets/MineBG.png" alt="Cerro Negro Pit aerial">
+          <!-- Overlay layers will go here -->
+        </div>
+
+        <!-- Floating New Capture button -->
+        <button class="fab" type="button" data-action="open-mission">
+          <span class="material-symbols-outlined">add_a_photo</span>
+          <span>New Capture</span>
+        </button>
+
+        <!-- Capture date — orienting context (Principle §4.1) -->
+        <div class="capture-stamp">
+          <span class="capture-stamp-dot"></span>
+          <span class="capture-stamp-label">Current capture</span>
+          <span class="capture-stamp-date">04.12.26</span>
+        </div>
+
+        <!-- Capture timeline -->
+        <div class="timeline" id="timeline">
+          <!-- Markers injected by app.js -->
+        </div>
+      </main>
+
+      <!-- Right Layers panel -->
+      <aside class="layers" aria-label="Layers">
+        <header class="layers-header">
+          <span>Layers</span>
+          <button class="icon-btn icon-btn-sm" type="button" aria-label="Add layer">
+            <span class="material-symbols-outlined">add</span>
+          </button>
+        </header>
+        <ul class="layers-list" id="layers-list">
+          <!-- Layer rows injected by app.js -->
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
