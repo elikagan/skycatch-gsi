@@ -120,8 +120,22 @@ body {
 .topbar-left  { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .topbar-right { display: flex; align-items: center; gap: 8px; justify-self: end; }
 
-.logo { display: flex; align-items: center; }
-.logo img { height: 26px; width: auto; }
+.logo {
+  display: flex; align-items: center;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 150ms ease-out;
+}
+.logo:hover { background: var(--bg-raised); }
+.logo-mark {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+/* SVG mark ships filled white. Invert in light mode so it reads as dark. */
+[data-theme="light"] .logo-mark {
+  filter: invert(1);
+}
 
 .breadcrumb { display: flex; align-items: center; gap: 6px; margin-left: 4px; }
 
