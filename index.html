@@ -82,9 +82,67 @@
 
       <!-- Map canvas -->
       <main class="canvas">
-        <div class="map">
+        <div class="map" id="map">
           <img class="map-bg" src="assets/MineBG.png" alt="Cerro Negro Pit aerial">
-          <!-- Overlay layers will go here -->
+
+          <!-- SVG overlays. Each <g data-layer> is shown only when
+               .map.show-<layer-id> is set on the parent. -->
+          <svg class="map-overlay" viewBox="0 0 1900 1229" preserveAspectRatio="xMidYMid slice">
+
+            <!-- Boundary 1 — perimeter polygon (brand blue) -->
+            <g data-layer="boundary-1">
+              <polygon class="overlay-stroke overlay-fill" style="--c: #2ea3ff"
+                points="180,260 420,180 720,150 1080,170 1410,220 1680,340 1810,560 1780,860 1620,1050 1300,1130 920,1140 560,1080 280,930 140,720 130,470" />
+            </g>
+
+            <!-- Boundary 2 — inner zone polygon (yellow) -->
+            <g data-layer="boundary-2">
+              <polygon class="overlay-stroke overlay-fill" style="--c: #eab308"
+                points="500,420 760,360 1020,360 1290,440 1430,610 1380,820 1180,930 880,950 620,880 470,720 470,560" />
+            </g>
+
+            <!-- Toes & Crests — green polylines tracing the bench edges -->
+            <g data-layer="toes-crests">
+              <polyline class="overlay-stroke" style="--c: #22c55e; --w: 3"
+                points="300,470 480,420 700,400 920,410 1140,440 1340,490 1480,580" />
+              <polyline class="overlay-stroke" style="--c: #22c55e; --w: 3"
+                points="360,610 540,560 760,550 980,560 1180,590 1360,650" />
+              <polyline class="overlay-stroke" style="--c: #22c55e; --w: 3"
+                points="440,760 620,720 820,710 1020,720 1200,750 1340,810" />
+              <polyline class="overlay-stroke" style="--c: #22c55e; --w: 3"
+                points="540,890 720,870 900,870 1080,890 1240,930" />
+            </g>
+
+            <!-- Dig Face — small purple polygon in the pit floor -->
+            <g data-layer="dig-face">
+              <polygon class="overlay-stroke overlay-fill" style="--c: #a855f7"
+                points="780,820 920,800 1020,830 1010,910 880,940 760,910" />
+            </g>
+
+            <!-- Width Analysis — yellow polyline -->
+            <g data-layer="width-1">
+              <polyline class="overlay-stroke" style="--c: #eab308; --w: 3; --d: 8 6"
+                points="1320,300 1380,440 1410,580 1390,720 1340,860 1260,990" />
+            </g>
+
+            <!-- Slope Analysis 1 — colored segment polyline along the haul road -->
+            <!-- Compliance segments: green (good) / amber (borderline) / red (over) -->
+            <g data-layer="slope-1" class="overlay-clickable" data-action="open-slope">
+              <polyline class="overlay-stroke" style="--c: #22c55e; --w: 5"
+                points="1420,310 1450,420 1470,520" />
+              <polyline class="overlay-stroke" style="--c: #eab308; --w: 5"
+                points="1470,520 1490,640 1485,760" />
+              <polyline class="overlay-stroke" style="--c: #ef4444; --w: 5"
+                points="1485,760 1460,880 1410,990 1340,1080" />
+              <!-- Anchor dots -->
+              <circle class="overlay-dot" cx="1420" cy="310" r="6" />
+              <circle class="overlay-dot" cx="1340" cy="1080" r="6" />
+              <!-- Click hint -->
+              <text class="overlay-label" x="1500" y="540">Slope Analysis 1</text>
+            </g>
+
+          </svg>
+          <!-- /overlays -->
         </div>
 
         <!-- Floating New Capture button -->

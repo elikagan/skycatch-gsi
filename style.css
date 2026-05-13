@@ -248,6 +248,67 @@ body {
   pointer-events: none;
 }
 
+/* ===================================================================
+   Map overlays (SVG)
+   Visibility is driven by .map.show-<layer-id> classes set by app.js.
+   Components reference layer style via inline CSS vars (--c, --w, --d).
+   =================================================================== */
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.map-overlay > g { display: none; }
+.map.show-boundary-1  > svg > g[data-layer="boundary-1"]  { display: block; }
+.map.show-boundary-2  > svg > g[data-layer="boundary-2"]  { display: block; }
+.map.show-toes-crests > svg > g[data-layer="toes-crests"] { display: block; }
+.map.show-dig-face    > svg > g[data-layer="dig-face"]    { display: block; }
+.map.show-width-1     > svg > g[data-layer="width-1"]     { display: block; }
+.map.show-slope-1     > svg > g[data-layer="slope-1"]     { display: block; }
+
+.overlay-stroke {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: var(--w, 2.5);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: var(--d, none);
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.45));
+}
+.overlay-fill {
+  fill: var(--c);
+  fill-opacity: .14;
+}
+.overlay-dot {
+  fill: var(--bg-elevated);
+  stroke: var(--text-primary);
+  stroke-width: 2;
+}
+.overlay-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  fill: var(--text-primary);
+  paint-order: stroke;
+  stroke: rgba(0,0,0,.6);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+[data-theme="light"] .overlay-label {
+  stroke: rgba(255,255,255,.85);
+}
+
+.overlay-clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.overlay-clickable:hover .overlay-stroke {
+  stroke-width: calc(var(--w, 2.5) * 1.15);
+}
+
 /* Floating New Capture button */
 .fab {
   position: absolute;

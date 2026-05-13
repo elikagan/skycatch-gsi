@@ -66,6 +66,7 @@
       if (!layer) return;
       layer.visible = !layer.visible;
       renderLayers();
+      syncMapLayerVisibility();
     },
     'new': () => {}
   };
@@ -84,6 +85,16 @@
   function setScene(name) {
     state.scene = name;
     app.setAttribute('data-scene', name);
+  }
+
+  // ----- Layer visibility on the map -----
+  // Driven by CSS class toggle on .map: `show-<layer-id>`.
+  function syncMapLayerVisibility() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    LAYERS.forEach(L => {
+      mapEl.classList.toggle(`show-${L.id}`, L.visible);
+    });
   }
 
   // ----- Layers rendering -----
@@ -148,4 +159,5 @@
   applyTheme();
   renderLayers();
   renderTimeline();
+  syncMapLayerVisibility();
 })();
