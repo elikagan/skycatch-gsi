@@ -213,6 +213,9 @@ body {
 .workspace {
   display: grid;
   grid-template-columns: 56px 1fr 248px;
+  /* minmax(0, 1fr) on the row prevents tall grid items (the layers
+     panel especially) from pushing the row beyond the viewport. */
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
 }
 
@@ -355,29 +358,6 @@ body {
 .fab:hover { background: var(--bg-raised); }
 .fab:active { transform: translateY(1px); }
 .fab .material-symbols-outlined { font-size: 18px; color: var(--brand); }
-
-/* Capture stamp — orienting context, always visible */
-.capture-stamp {
-  position: absolute;
-  top: 16px; left: 16px;
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 0 12px;
-  height: 32px;
-  border-radius: 999px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-card);
-  font-size: 12px;
-  z-index: 5;
-}
-.capture-stamp-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--brand);
-  box-shadow: 0 0 0 3px var(--brand-tint);
-}
-.capture-stamp-label { color: var(--text-muted); }
-.capture-stamp-date  { color: var(--text-primary); font-weight: 600; font-feature-settings: 'tnum'; }
 
 /* ===================================================================
    Capture timeline (bottom) — the §4.1 time-first surface.
@@ -1003,6 +983,8 @@ body {
   background: var(--bg-elevated);
   border-left: 1px solid var(--border-subtle);
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 .layers-header {
   display: flex; align-items: center; justify-content: space-between;

@@ -52,7 +52,19 @@
         { id: 'boundary-2', name: 'Boundary 2', date: '04.12.26', visible: false, color: '#eab308' }
       ]
     },
-    { id: 'orthophoto',   name: 'Orthophoto',     date: '04.12.26', visible: true,  color: null },
+    {
+      // The visible orthophoto is a COMPOSITE of multiple captures of
+      // smaller regions. Each child is one mission's coverage tile.
+      id: 'orthophoto', name: 'Orthophoto',
+      isGroup: true, expanded: true,
+      children: [
+        { id: 'ortho-ne-benches',   name: 'NE benches',      date: '04.12.26', visible: true,  color: null },
+        { id: 'ortho-pit-floor',    name: 'Pit floor',       date: '04.08.26', visible: true,  color: null },
+        { id: 'ortho-haul-road-e',  name: 'Haul road east',  date: '03.25.26', visible: true,  color: null },
+        { id: 'ortho-south-perim',  name: 'South perimeter', date: '03.18.26', visible: true,  color: null },
+        { id: 'ortho-west-benches', name: 'West benches',    date: '03.04.26', visible: false, color: null }
+      ]
+    },
     { id: 'terrain',      name: 'Terrain',        date: '04.12.26', visible: false, color: null },
     { id: 'basemap',      name: 'Basemap',        date: '—',        visible: true,  color: null }
   ];
