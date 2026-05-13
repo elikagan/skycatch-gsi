@@ -35,19 +35,22 @@
   // Past captures + the current one + scheduled future ones share the
   // same visual language (§4.1).
   const CAPTURES = [
-    { date: '02.18.26', kind: 'past'      },
-    { date: '02.25.26', kind: 'past'      },
-    { date: '03.04.26', kind: 'past'      },
-    { date: '03.11.26', kind: 'past'      },
-    { date: '03.18.26', kind: 'past'      },
-    { date: '03.25.26', kind: 'past'      },
-    { date: '04.01.26', kind: 'past'      },
-    { date: '04.08.26', kind: 'past'      },
-    { date: '04.12.26', kind: 'current'   },
-    { date: '04.19.26', kind: 'scheduled' },
-    { date: '04.26.26', kind: 'scheduled' },
-    { date: '05.03.26', kind: 'scheduled' }
+    { date: '02.18.26', kind: 'past',      payload: 'LiDAR'  },
+    { date: '02.25.26', kind: 'past',      payload: 'Photo'  },
+    { date: '03.04.26', kind: 'past',      payload: 'LiDAR'  },
+    { date: '03.11.26', kind: 'past',      payload: 'LiDAR'  },
+    { date: '03.18.26', kind: 'past',      payload: 'Photo'  },
+    { date: '03.25.26', kind: 'past',      payload: 'LiDAR'  },
+    { date: '04.01.26', kind: 'past',      payload: 'LiDAR'  },
+    { date: '04.08.26', kind: 'past',      payload: 'Photo'  },
+    { date: '04.12.26', kind: 'current',   payload: 'LiDAR'  },
+    { date: '04.19.26', kind: 'scheduled', payload: 'LiDAR'  },
+    { date: '04.26.26', kind: 'scheduled', payload: 'LiDAR'  },
+    { date: '05.03.26', kind: 'scheduled', payload: 'Photo'  }
   ];
+
+  const CAPTURE_AXIS_LABELS = ['Feb 26', 'Mar 26', 'Apr 26', 'May 26'];
+  const KIND_LABEL = { past: 'Past capture', current: 'Current view', scheduled: 'Scheduled' };
 
   // ----- Actions registry (delegated click handlers) -----
   // Add a new click target: drop `data-action="..."` on any element.
@@ -153,20 +156,54 @@
   function renderTimeline() {
     const el = document.getElementById('timeline');
     if (!el) return;
+
+    const counts = CAPTURES.reduce((acc, c) => (acc[c.kind] = (acc[c.kind] || 0) + 1, acc), {});
+    const n = CAPTURES.length - 1;
+
     el.innerHTML = `
+      <header class="timeline-header">
+        <span class="timeline-title">
+          <span class="material-symbols-outlined">schedule</span>
+          Capture history
+        </span>
+        <span class="timeline-summary">
+          <span class="timeline-summary-item">
+            <span class="timeline-legend-dot is-past"></span>
+            ${counts.past || 0} past
+          </span>
+          <span class="timeline-summary-item">
+            <span class="timeline-legend-dot is-current"></span>
+            ${counts.current || 0} current
+          </span>
+          <span class="timeline-summary-item">
+            <span class="timeline-legend-dot is-scheduled"></span>
+            ${counts.scheduled || 0} scheduled
+          </span>
+        </span>
+      </header>
+
       <div class="timeline-track">
+        <span class="timeline-baseline"></span>
         ${CAPTURES.map((c, i) => `
           <button class="timeline-marker is-${c.kind}"
                   type="button"
-                  title="${c.date}"
-                  style="--i:${i}; --n:${CAPTURES.length - 1}">
+                  aria-label="${KIND_LABEL[c.kind]} on ${c.date}"
+                  style="--i:${i}; --n:${n}">
             <span class="timeline-marker-dot"></span>
+            ${c.kind === 'current' ? '<span class="timeline-now-line"></span>' : ''}
+            <span class="timeline-tooltip" role="tooltip">
+              <span class="timeline-tooltip-kind is-${c.kind}">${KIND_LABEL[c.kind]}</span>
+              <span class="timeline-tooltip-date">${c.date}</span>
+              <span class="timeline-tooltip-meta">${c.payload} mission</span>
+            </span>
           </button>
         `).join('')}
       </div>
+
       <div class="timeline-axis">
-        <span>${CAPTURES[0].date}</span>
-        <span>${CAPTURES[CAPTURES.length - 1].date}</span>
+        ${CAPTURE_AXIS_LABELS.map((l, i) => `
+          <span style="--i:${i}; --n:${CAPTURE_AXIS_LABELS.length - 1}">${l}</span>
+        `).join('')}
       </div>
     `;
   }

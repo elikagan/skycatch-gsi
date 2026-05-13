@@ -380,21 +380,68 @@ body {
 .capture-stamp-date  { color: var(--text-primary); font-weight: 600; font-feature-settings: 'tnum'; }
 
 /* ===================================================================
-   Capture timeline (bottom)
+   Capture timeline (bottom) — the §4.1 time-first surface.
    =================================================================== */
 .timeline {
   position: absolute;
   bottom: 16px; left: 16px; right: 16px;
-  height: 64px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
   box-shadow: var(--shadow-panel);
   display: grid;
-  grid-template-rows: 1fr 18px;
-  padding: 8px 12px 4px;
+  grid-template-rows: auto 1fr auto;
+  padding: 10px 16px 8px;
   z-index: 5;
 }
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 4px;
+}
+.timeline-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-secondary);
+}
+.timeline-title .material-symbols-outlined {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.timeline-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-feature-settings: 'tnum';
+}
+.timeline-summary-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Legend dots match the marker styles below */
+.timeline-legend-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.timeline-legend-dot.is-past      { background: var(--text-muted); }
+.timeline-legend-dot.is-current   { background: var(--brand); box-shadow: 0 0 0 3px var(--brand-tint); }
+.timeline-legend-dot.is-scheduled { background: transparent; border: 1.5px dashed var(--brand); }
 
 /* ===================================================================
    3D oblique tilt — used by State 2 and 3
@@ -1018,59 +1065,177 @@ body {
 .layer-row.is-visible .layer-eye { color: var(--brand); }
 
 /* ===================================================================
-   Timeline internals
+   Timeline track + markers
    =================================================================== */
 .timeline-track {
   position: relative;
-  height: 100%;
-  display: flex; align-items: center;
-}
-/* Baseline line through the markers */
-.timeline-track::before {
-  content: '';
-  position: absolute;
-  left: 6px; right: 6px;
-  top: 50%;
-  height: 1px;
-  background: var(--border-subtle);
+  height: 36px;
 }
 
+/* Baseline */
+.timeline-baseline {
+  position: absolute;
+  left: 8px; right: 8px;
+  top: 50%;
+  height: 1px;
+  background: var(--border-strong);
+  border-radius: 1px;
+}
+
+/* Markers — absolutely positioned via --i / --n */
 .timeline-marker {
   position: absolute;
-  left: calc(6px + (100% - 12px) * (var(--i) / var(--n)));
+  left: calc(8px + (100% - 16px) * (var(--i) / var(--n)));
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 18px; height: 18px;
+  width: 24px; height: 24px;
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 50%;
   background: transparent;
   transition: transform 150ms ease-out;
+  cursor: pointer;
 }
-.timeline-marker:hover { transform: translate(-50%, -50%) scale(1.15); }
+.timeline-marker:hover { z-index: 2; }
+.timeline-marker:hover .timeline-marker-dot {
+  transform: scale(1.25);
+}
+.timeline-marker:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
 
 .timeline-marker-dot {
-  width: 8px; height: 8px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   background: var(--text-muted);
-  border: 1px solid var(--bg-elevated);
-}
-.timeline-marker.is-past .timeline-marker-dot      { background: var(--text-muted); }
-.timeline-marker.is-current                        {  }
-.timeline-marker.is-current .timeline-marker-dot   {
-  background: var(--brand);
-  width: 12px; height: 12px;
-  box-shadow: 0 0 0 4px var(--brand-tint);
-}
-.timeline-marker.is-scheduled .timeline-marker-dot {
-  background: transparent;
-  border: 1px dashed var(--brand);
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  position: relative;
+  z-index: 1;
 }
 
-.timeline-axis {
-  display: flex; justify-content: space-between;
-  font-size: 10px;
-  font-feature-settings: 'tnum';
-  color: var(--text-dim);
-  letter-spacing: .04em;
-  padding: 0 2px;
+/* Past — solid muted dot */
+.timeline-marker.is-past .timeline-marker-dot {
+  background: var(--text-muted);
 }
+.timeline-marker.is-past:hover .timeline-marker-dot {
+  background: var(--text-secondary);
+  box-shadow: 0 0 0 3px var(--bg-raised);
+}
+
+/* Current — bigger filled brand dot with halo */
+.timeline-marker.is-current .timeline-marker-dot {
+  background: var(--brand);
+  width: 14px; height: 14px;
+  box-shadow: 0 0 0 4px var(--brand-tint);
+}
+.timeline-marker.is-current:hover .timeline-marker-dot {
+  box-shadow: 0 0 0 6px var(--brand-tint);
+}
+
+/* "Now" vertical line — anchors the current capture to the map above */
+.timeline-now-line {
+  position: absolute;
+  left: 50%;
+  top: -200vh;     /* extends way up through canvas; clipped by parent */
+  bottom: calc(50% + 11px);
+  width: 1.5px;
+  background: linear-gradient(to top, var(--brand) 0%, var(--brand) 12%, transparent 70%);
+  opacity: .55;
+  pointer-events: none;
+}
+
+/* Scheduled — open dashed ring */
+.timeline-marker.is-scheduled .timeline-marker-dot {
+  background: transparent;
+  border: 1.5px dashed var(--brand);
+  width: 11px; height: 11px;
+}
+.timeline-marker.is-scheduled:hover .timeline-marker-dot {
+  background: var(--brand-tint);
+}
+
+/* Tooltip — needs to read clearly against the dark canvas behind it */
+.timeline-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 7px 10px 8px;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out, transform 120ms ease-out;
+  z-index: 3;
+  display: flex; flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+[data-theme="light"] .timeline-tooltip {
+  background: var(--bg-elevated);
+  box-shadow: 0 6px 18px rgba(0,0,0,.14);
+}
+.timeline-marker:hover .timeline-tooltip,
+.timeline-marker:focus-visible .timeline-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+/* Tooltip arrow */
+.timeline-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; left: 50%;
+  width: 10px; height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--bg-raised);
+  border-right: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+}
+[data-theme="light"] .timeline-tooltip::after {
+  background: var(--bg-elevated);
+}
+
+.timeline-tooltip-kind {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+}
+.timeline-tooltip-kind.is-past      { color: var(--text-muted); }
+.timeline-tooltip-kind.is-current   { color: var(--brand); }
+.timeline-tooltip-kind.is-scheduled { color: var(--brand); }
+.timeline-tooltip-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.01em;
+}
+.timeline-tooltip-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Axis labels — evenly distributed via --i / --n.
+   First/last labels align to their edges to avoid clipping. */
+.timeline-axis {
+  position: relative;
+  height: 16px;
+  margin-top: 4px;
+}
+.timeline-axis span {
+  position: absolute;
+  left: calc(8px + (100% - 16px) * (var(--i) / var(--n)));
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 500;
+  font-feature-settings: 'tnum';
+  color: var(--text-secondary);
+  letter-spacing: .02em;
+}
+.timeline-axis span:first-child { transform: translateX(0); }
+.timeline-axis span:last-child  { transform: translateX(-100%); }
