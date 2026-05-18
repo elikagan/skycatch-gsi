@@ -280,12 +280,27 @@ body {
 }
 
 .map-overlay > g { display: none; }
-.map.show-boundary-1  > svg > g[data-layer="boundary-1"]  { display: block; }
-.map.show-boundary-2  > svg > g[data-layer="boundary-2"]  { display: block; }
-.map.show-toes-crests > svg > g[data-layer="toes-crests"] { display: block; }
-.map.show-dig-face    > svg > g[data-layer="dig-face"]    { display: block; }
-.map.show-width-1     > svg > g[data-layer="width-1"]     { display: block; }
-.map.show-slope-1     > svg > g[data-layer="slope-1"]     { display: block; }
+
+/* ===================================================================
+   Real-data PNG overlays
+   Sourced from a layered Photoshop export of DataHub screenshots.
+   All sized identically (1902x1352) so they composite pixel-perfect.
+   =================================================================== */
+.overlay-png {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  display: none;
+}
+.map.show-west-road-centerline       .overlay-png[data-layer="west-road-centerline"]       { display: block; }
+.map.show-road-slope-analysis        .overlay-png[data-layer="road-slope-analysis"]        { display: block; pointer-events: auto; cursor: pointer; }
+.map.show-east-road-width-l-r-analysis  .overlay-png[data-layer="east-road-width-l-r-analysis"]  { display: block; }
+.map.show-east-road-width-left-analysis .overlay-png[data-layer="east-road-width-left-analysis"] { display: block; }
+.map.show-north-dump                 .overlay-png[data-layer="north-dump"]                 { display: block; }
+.map.show-south-dump                 .overlay-png[data-layer="south-dump"]                 { display: block; }
 
 /* Mission AOI is scene-driven, not layer-driven */
 .app[data-scene="mission"] .map-overlay > g[data-overlay="mission-aoi"] { display: block; }

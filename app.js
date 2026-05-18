@@ -19,9 +19,9 @@
 
   // ----- Data: layers (single source for the right panel) -----
   // Each carries a capture date — time is a first-class dimension (§4.1).
-  // Layers tree. Groups have `isGroup: true` + `children`; leaves are
-  // the actual map data layers. Group visibility is computed from
-  // children. Leaf IDs map to SVG <g data-layer="..."> on the map.
+  // Layers tree. Names match the layers in Skycatch_GSI_wLayers.psd
+  // so the prototype mirrors what a real DataHub user would see.
+  // Capture date 02.27.26 comes from the source dataset (ASARCO_PPK).
   const LAYERS = [
     {
       id: 'live-assets', name: 'Live Assets', live: true,
@@ -31,42 +31,27 @@
         { id: 'truck-1', name: 'Truck HT-093',      date: 'Live', visible: false, color: '#eab308', live: true }
       ]
     },
-    { id: 'toes-crests',  name: 'Toes & Crests',  date: '04.12.26', visible: true,  color: '#22c55e' },
-    { id: 'ahs-design',   name: 'AHS Design',     date: '03.30.26', visible: false, color: '#3b82f6' },
-    { id: 'dig-face',     name: 'Dig Face',       date: '04.12.26', visible: false, color: '#a855f7' },
-    { id: 'width-1',      name: 'Width Analysis', date: '04.12.26', visible: false, color: '#eab308' },
+    { id: 'west-road-centerline', name: 'West Road Centerline', date: '02.27.26', visible: true,  color: '#2ea3ff' },
+    { id: 'road-slope-analysis',  name: 'Road Slope Analysis',  date: '02.27.26', visible: false, color: '#ef4444' },
     {
-      id: 'slope-analyses', name: 'Slope Analyses',
-      isGroup: true, expanded: true,
-      children: [
-        { id: 'slope-1', name: 'Slope Analysis 1', date: '04.12.26', visible: true,  color: '#ef4444' },
-        { id: 'slope-2', name: 'Slope Analysis 2', date: '04.05.26', visible: false, color: '#ef4444' },
-        { id: 'slope-3', name: 'Slope Analysis 3', date: '03.18.26', visible: false, color: '#ef4444' }
-      ]
-    },
-    {
-      id: 'boundaries', name: 'Boundaries',
+      id: 'east-road-width', name: 'East Road Width',
       isGroup: true, expanded: false,
       children: [
-        { id: 'boundary-1', name: 'Boundary 1', date: '04.12.26', visible: true,  color: '#2ea3ff' },
-        { id: 'boundary-2', name: 'Boundary 2', date: '04.12.26', visible: false, color: '#eab308' }
+        { id: 'east-road-width-l-r-analysis',  name: 'L + R Lanes',   date: '02.27.26', visible: false, color: '#22c55e' },
+        { id: 'east-road-width-left-analysis', name: 'Left Lane',     date: '02.27.26', visible: false, color: '#22c55e' }
       ]
     },
     {
-      // The visible orthophoto is a COMPOSITE of multiple captures of
-      // smaller regions. Each child is one mission's coverage tile.
-      id: 'orthophoto', name: 'Orthophoto',
-      isGroup: true, expanded: true,
+      id: 'dump-sites', name: 'Dump Sites',
+      isGroup: true, expanded: false,
       children: [
-        { id: 'ortho-ne-benches',   name: 'NE benches',      date: '04.12.26', visible: true,  color: null },
-        { id: 'ortho-pit-floor',    name: 'Pit floor',       date: '04.08.26', visible: true,  color: null },
-        { id: 'ortho-haul-road-e',  name: 'Haul road east',  date: '03.25.26', visible: true,  color: null },
-        { id: 'ortho-south-perim',  name: 'South perimeter', date: '03.18.26', visible: true,  color: null },
-        { id: 'ortho-west-benches', name: 'West benches',    date: '03.04.26', visible: false, color: null }
+        { id: 'north-dump', name: 'North Dump', date: '02.27.26', visible: true,  color: '#3b82f6' },
+        { id: 'south-dump', name: 'South Dump', date: '02.27.26', visible: true,  color: '#eab308' }
       ]
     },
-    { id: 'terrain',      name: 'Terrain',        date: '04.12.26', visible: false, color: null },
-    { id: 'basemap',      name: 'Basemap',        date: '—',        visible: true,  color: null }
+    { id: 'orthophoto',  name: 'Orthophoto', date: '02.27.26', visible: true,  color: null },
+    { id: 'terrain',     name: 'Terrain',    date: '02.27.26', visible: false, color: null },
+    { id: 'basemap',     name: 'Basemap',    date: '—',        visible: true,  color: null }
   ];
 
   // Helpers for the tree
@@ -138,8 +123,8 @@
     'go-default':   () => setScene('default'),
     'open-mission': () => setScene('mission'),
     'open-slope':   () => {
-      // Make sure the slope layer is on so users see the colored haul road
-      const slope = LAYERS.find(l => l.id === 'slope-1');
+      // Make sure the slope overlay is on so users see the analysis
+      const slope = findLayer('road-slope-analysis');
       if (slope && !slope.visible) {
         slope.visible = true;
         renderLayers();
@@ -231,7 +216,7 @@
   // ----- Layers rendering -----
   // Layers that open a detail scene when their row is clicked.
   const LAYER_OPEN_ACTION = {
-    'slope-1': 'open-slope'
+    'road-slope-analysis': 'open-slope'
   };
 
   function renderLeafRow(L, isChild) {
