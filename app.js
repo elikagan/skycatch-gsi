@@ -31,24 +31,12 @@
         { id: 'truck-1', name: 'Truck HT-093',      date: 'Live', visible: false, color: '#eab308', live: true }
       ]
     },
-    { id: 'west-road-centerline', name: 'West Road Centerline', date: '02.27.26', visible: true,  color: '#2ea3ff' },
-    { id: 'road-slope-analysis',  name: 'Road Slope Analysis',  date: '02.27.26', visible: false, color: '#ef4444' },
-    {
-      id: 'east-road-width', name: 'East Road Width',
-      isGroup: true, expanded: false,
-      children: [
-        { id: 'east-road-width-l-r-analysis',  name: 'L + R Lanes',   date: '02.27.26', visible: false, color: '#22c55e' },
-        { id: 'east-road-width-left-analysis', name: 'Left Lane',     date: '02.27.26', visible: false, color: '#22c55e' }
-      ]
-    },
-    {
-      id: 'dump-sites', name: 'Dump Sites',
-      isGroup: true, expanded: false,
-      children: [
-        { id: 'north-dump', name: 'North Dump', date: '02.27.26', visible: true,  color: '#3b82f6' },
-        { id: 'south-dump', name: 'South Dump', date: '02.27.26', visible: true,  color: '#eab308' }
-      ]
-    },
+    { id: 'west-road-centerline',           name: 'West Road Centerline',           date: '02.27.26', visible: true,  color: '#2ea3ff' },
+    { id: 'road-slope-analysis',            name: 'Road slope analysis',            date: '02.27.26', visible: false, color: '#ef4444' },
+    { id: 'east-road-width-l-r-analysis',   name: 'East Road Width L+R Analysis',   date: '02.27.26', visible: false, color: '#22c55e' },
+    { id: 'east-road-width-left-analysis',  name: 'East Road Width Left Analysis',  date: '02.27.26', visible: false, color: '#22c55e' },
+    { id: 'north-dump',                     name: 'North Dump',                     date: '02.27.26', visible: true,  color: '#3b82f6' },
+    { id: 'south-dump',                     name: 'South Dump',                     date: '02.27.26', visible: true,  color: '#eab308' },
     { id: 'orthophoto',  name: 'Orthophoto', date: '02.27.26', visible: true,  color: null },
     { id: 'terrain',     name: 'Terrain',    date: '02.27.26', visible: false, color: null },
     { id: 'basemap',     name: 'Basemap',    date: '—',        visible: true,  color: null }
